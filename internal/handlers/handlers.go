@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -102,6 +103,7 @@ func ListToWsChannel() {
 				ConnectedUsers: users,
 			}
 			broadcastToAll(response)
+
 		case "left":
 			delete(clients, e.Conn)
 			users := getUserList()
@@ -110,19 +112,23 @@ func ListToWsChannel() {
 				ConnectedUsers: users,
 			}
 			broadcastToAll(response)
+
+		case "broadcast":
+			response := WsJsonResponse{
+				Action:  "broadcast",
+				Message: fmt.Sprintf("<strong>%s</strong>: %s", e.Username, e.Message),
+			}
+			broadcastToAll(response)
 		}
-		// response := WsJsonResponse{
-		// 	Action:  "Got here",
-		// 	Message: fmt.Sprintf("Message and action was %s", e.Action),
-		// }
-		// broadcastToAll(response)
 	}
 }
 
 func getUserList() []string {
 	var userList []string
 	for _, v := range clients {
-		userList = append(userList, v)
+		if v != "" {
+			userList = append(userList, v)
+		}
 	}
 	sort.Strings(userList)
 	return userList
